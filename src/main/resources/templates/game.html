@@ -2,10 +2,18 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-
 <div>
     Correct answer is: <span th:each="message: ${answer}" th:text="${message}"></span>
 </div>
-
+<h3>
+    Attempt <span th:text="${guessNumber}"></span> of <span th:text="${maxAttempt}"></span>
+</h3>
+<form th:action="@{/guess}" method="post"> Enter your guess here:
+    <input name="input" maxlength="4" pattern="\d{4}" required>
+    <button type="submit">Submit Guess</button>
+</form>
+<div th:if="${showError}" style="color:red">
+    Each digit must be 0 ~ 7 !!!
+</div>
 </body>
 </html>
