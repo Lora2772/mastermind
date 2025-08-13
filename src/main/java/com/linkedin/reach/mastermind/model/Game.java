@@ -6,10 +6,11 @@ import java.util.List;
 public class Game {
     private String answer;
     private final int maxAttempts = 10;
-    private List<Guess> guessHistory = new ArrayList();
+    private List<Guess> guessHistory;
 
     public Game(String answer){
         this.answer = answer;
+        this.guessHistory = new ArrayList<>();
     }
 
     public String getAnswer(){

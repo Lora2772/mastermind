@@ -4,6 +4,11 @@
 <body>
 <h1>Welcome to MasterMind</h1>
 
+<div style="color:blue">
+    Game rule: Try to guess a four-digit code using digits 0 through 7. You have 10 attempts.
+</div>
+<br>
+
 <form th:action="@{/initiateGame}" method="post">
     <button type="submit">Start New Game</button>
 </form>

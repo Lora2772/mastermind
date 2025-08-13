@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-<div>
+<div style="color:slategrey">
     Correct answer is: <span th:each="message: ${answer}" th:text="${message}"></span>
 </div>
 <h3>
@@ -15,5 +15,16 @@
 <div th:if="${showError}" style="color:red">
     Each digit must be 0 ~ 7 !!!
 </div>
+
+<h4>History</h4>
+<table border="1" cellpadding="4" cellspacing="0">
+    <tr><th>#</th><th>Guess</th><th>Correct Numbers</th><th>Correct Locations</th></tr>
+    <tr th:each="g, st : ${currentGame.guessHistory}">
+        <td th:text="${st.index + 1}"></td>
+        <td th:text="${g.input}"></td>
+        <td th:text="${g.correctNumbers}"></td>
+        <td th:text="${g.correctLocations}"></td>
+    </tr>
+</table>
 </body>
 </html>
