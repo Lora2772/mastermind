@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Test</title>
-</head>
+
 <body>
-<h1 th:text="${message}">Default message</h1>
+<h1>Welcome to MasterMind</h1>
+
+<form th:action="@{/game}" method="post">
+    <button type="submit">Start New Game</button>
+</form>
+
 </body>
 </html>

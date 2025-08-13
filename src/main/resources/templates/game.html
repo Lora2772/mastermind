@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<div>
+    Correct answer is: <span th:each="message: ${answer}" th:text="${message}"></span>
+</div>
+
+</body>
+</html>
