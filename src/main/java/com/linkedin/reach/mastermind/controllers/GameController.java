@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 
 @Controller
 public class GameController {
@@ -44,9 +43,6 @@ public class GameController {
     @GetMapping("/game")
     public String game(Model model){
         Game currentGame = store.getCurrent();
-        model.addAttribute("answer", currentGame.getAnswer());
-//        model.addAttribute("guessNumber", currentGame.getAttempts());
-        model.addAttribute("maxAttempt", currentGame.getMaxAttempts());
         model.addAttribute("currentGame", currentGame);
         return "game";
     }
@@ -84,9 +80,6 @@ public class GameController {
     public String result(Model model){
         Game currentGame = store.getCurrent();
         if (currentGame == null) return "redirect:/";
-        model.addAttribute("won", currentGame.getWon());
-        model.addAttribute("answer", currentGame.getAnswer());
-        model.addAttribute("guessHistory", currentGame.getGuessHistory());
         model.addAttribute("currentGame", currentGame);
         return "result";
     }

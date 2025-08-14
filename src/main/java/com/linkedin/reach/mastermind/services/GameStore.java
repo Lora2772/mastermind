@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class GameStore {
-    private static Game current;
-    public static Game getCurrent(){
+    private Game current;
+    public Game getCurrent(){
         return current;
     }
     public void setCurrent(Game current){

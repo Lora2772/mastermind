@@ -7,7 +7,6 @@ public class Game {
     private String answer;
     private final int maxAttempts = 10;
     private List<Guess> guessHistory;
-    private int attempts;
     private boolean won;
 
     public Game(String answer){

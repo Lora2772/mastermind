@@ -3,10 +3,10 @@
 
 <body th:object="${currentGame}">
 <div style="color:slategrey">
-    Correct answer is: <span th:each="message: ${answer}" th:text="${message}"></span>
+    Correct answer is: <span th:each="message: ${currentGame.answer}" th:text="${message}"></span>
 </div>
 <h3>
-    Attempt <span th:text="${currentGame.attempts}"></span> of <span th:text="${maxAttempt}"></span>
+    Attempt <span th:text="${currentGame.attempts}"></span> of <span th:text="${currentGame.maxAttempts}"></span>
 </h3>
 <form th:action="@{/guess}" method="post"> Enter your guess here:
     <input name="input" maxlength="4" pattern="\d{4}" required>
