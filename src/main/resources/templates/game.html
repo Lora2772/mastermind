@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<body>
+<body th:object="${currentGame}">
 <div style="color:slategrey">
     Correct answer is: <span th:each="message: ${answer}" th:text="${message}"></span>
 </div>
 <h3>
-    Attempt <span th:text="${guessNumber}"></span> of <span th:text="${maxAttempt}"></span>
+    Attempt <span th:text="${currentGame.attempts}"></span> of <span th:text="${maxAttempt}"></span>
 </h3>
 <form th:action="@{/guess}" method="post"> Enter your guess here:
     <input name="input" maxlength="4" pattern="\d{4}" required>
@@ -14,6 +14,14 @@
 </form>
 <div th:if="${showError}" style="color:red">
     Each digit must be 0 ~ 7 !!!
+</div>
+
+<br>
+<div th:if="${showBoth}" style="color:darkgreen">
+    You have guessed <span th:text="${correctNumbers}"></span> correct numbers and <span th:text="${correctLocations}"></span> correct locations.
+</div>
+<div th:if="${showMessage}" style="color:darkblue">
+    All incorrect. Please try again.
 </div>
 
 <h4>History</h4>

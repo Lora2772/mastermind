@@ -2,11 +2,13 @@ package com.linkedin.reach.mastermind.services;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
-public class GuessCheckService {
+public class CheckService {
     public int countCorrectNumbers(String answer, String input){
         Map<Character, Integer> answerFreqMap = new HashMap<>();
         for(int i = 0; i < answer.length(); i++){
