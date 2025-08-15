@@ -12,4 +12,10 @@ public class GameStore {
     public void setCurrent(Game current){
         this.current = current;
     }
+    public void clear(){
+        this.current = null;
+    }
+    public boolean hasGame() {
+        return current != null;
+    }
 }

@@ -8,6 +8,7 @@ public class Game {
     private final int maxAttempts = 10;
     private List<Guess> guessHistory;
     private boolean won;
+    private boolean finished;
 
     public Game(String answer){
         this.answer = answer;
@@ -26,4 +27,6 @@ public class Game {
     public int getAttempts() { return guessHistory.size(); }
     public boolean getWon(){ return won; }
     public void setWon(boolean won){ this.won = won; }
+    public void setFinished(boolean finished) { this.finished = finished; }
+    public boolean isFinished() { return finished; }
 }

@@ -34,5 +34,10 @@
         <td th:text="${g.correctLocations}"></td>
     </tr>
 </table>
+
+<br>
+<form th:action="@{/restart}" method="post">
+    <button type="submit">Abandon and Restart</button>
+</form>
 </body>
 </html>

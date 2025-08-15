@@ -3,7 +3,7 @@ package com.linkedin.reach.mastermind.controllers;
 import com.linkedin.reach.mastermind.model.Game;
 import com.linkedin.reach.mastermind.model.Guess;
 import com.linkedin.reach.mastermind.services.GameStore;
-import com.linkedin.reach.mastermind.services.AnswerGenerator;
+import com.linkedin.reach.mastermind.services.PublicApiAnswerGenerator;
 import com.linkedin.reach.mastermind.services.CheckService;
 import com.linkedin.reach.mastermind.services.InputValidator;
 import org.springframework.stereotype.Controller;
@@ -17,32 +17,35 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class GameController {
     private final GameStore store;
-    private final AnswerGenerator answerGenerator;
+    private final PublicApiAnswerGenerator publicApiAnswerGenerator;
     private final InputValidator inputValidator;
     private final CheckService checkService;
 
-    public GameController(GameStore store, AnswerGenerator answerGenerator, InputValidator inputValidator, CheckService checkService){
+    public GameController(GameStore store, PublicApiAnswerGenerator publicApiAnswerGenerator, InputValidator inputValidator, CheckService checkService){
         this.store = store;
-        this.answerGenerator = answerGenerator;
+        this.publicApiAnswerGenerator = publicApiAnswerGenerator;
         this.inputValidator = inputValidator;
         this.checkService = checkService;
     }
 
     @GetMapping("/")
     public String home(Model model) {
+        model.addAttribute("hasGame", store.hasGame());
         return "index";
     }
 
     @PostMapping("/initiateGame")
     public String initiateGame(){
-        Game newGame = new Game(answerGenerator.generate());
+        Game newGame = new Game(publicApiAnswerGenerator.generate());
         store.setCurrent(newGame);
         return "redirect:/game";
     }
 
     @GetMapping("/game")
-    public String game(Model model){
+    public String game(Model model, RedirectAttributes ra){
         Game currentGame = store.getCurrent();
+        if (currentGame == null) return "redirect:/";
+        if (currentGame.isFinished()) return "redirect:/result";
         model.addAttribute("currentGame", currentGame);
         return "game";
     }
@@ -68,8 +71,10 @@ public class GameController {
 
         if (correctLocations >= 4){
             currentGame.setWon(true);
+            currentGame.setFinished(true);
             return "redirect:/result";
         } else if (currentGame.getAttempts() >= currentGame.getMaxAttempts()) {
+            currentGame.setFinished(true);
             return "redirect:/result";
         }
 
@@ -82,5 +87,11 @@ public class GameController {
         if (currentGame == null) return "redirect:/";
         model.addAttribute("currentGame", currentGame);
         return "result";
+    }
+
+    @PostMapping("/restart")
+    public String reset() {
+        store.clear();
+        return "redirect:/";
     }
 }

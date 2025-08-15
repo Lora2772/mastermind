@@ -1,5 +1,6 @@
 package com.linkedin.reach.mastermind.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -9,7 +10,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @Service
-public class AnswerGenerator {
+public class PublicApiAnswerGenerator {
+
+    JavaAnswerGenerator javaAnswerGenerator;
+    public PublicApiAnswerGenerator(JavaAnswerGenerator javaAnswerGenerator) {
+        this.javaAnswerGenerator = javaAnswerGenerator;
+    }
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -36,10 +42,18 @@ public class AnswerGenerator {
             for (String part : parts) {
                 sb.append(part);
             }
+            if(sb.length() != 4){
+                System.out.println("Using java api to generate 4 digits");
+                return javaAnswerGenerator.generate();
+
+            } else {
+                System.out.println("Using public api to generate 4 digits");
+            }
+
             return sb.toString();
 
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Failed to fetch random numbers from Random.org", e);
+            throw new RuntimeException("Failed to generate random numbers from Random.org", e);
         }
     }
 
