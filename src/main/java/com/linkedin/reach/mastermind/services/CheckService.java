@@ -8,20 +8,18 @@ import java.util.Map;
 @Service
 public class CheckService {
     public int countCorrectNumbers(String answer, String input){
-        Map<Character, Integer> answerFreqMap = new HashMap<>();
-        for(int i = 0; i < answer.length(); i++){
-            answerFreqMap.put(answer.charAt(i), answerFreqMap.getOrDefault(answer.charAt(i), 0) + 1);
-        }
-
-        Map<Character, Integer> inputFreqMap = new HashMap<>();
-        for(int i = 0; i < input.length(); i++){
-            inputFreqMap.put(input.charAt(i), inputFreqMap.getOrDefault(input.charAt(i), 0) + 1);
-        }
         int correctNumber = 0;
-        for(Map.Entry<Character, Integer> entry : answerFreqMap.entrySet()){
-            Character num = entry.getKey();
-            if(inputFreqMap.containsKey(num)){
-                correctNumber += Math.min(entry.getValue(), inputFreqMap.get(num));
+        int[] answerFreq = new int[8];
+        for(int i = 0; i < answer.length(); i++){
+            answerFreq[answer.charAt(i) - '0']++;
+        }
+        int[] inputFreq = new int[8];
+        for(int i = 0; i < input.length(); i++){
+            inputFreq[input.charAt(i) - '0']++;
+        }
+        for(int i = 0; i <= 7; i++){
+            if(answerFreq[i] > 0 && inputFreq[i] > 0){
+                correctNumber += Math.min(answerFreq[i], inputFreq[i]);
             }
         }
         return correctNumber;
