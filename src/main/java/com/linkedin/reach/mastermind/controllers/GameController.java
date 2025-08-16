@@ -38,6 +38,7 @@ public class GameController {
     public String initiateGame(){
         Game newGame = new Game(publicApiAnswerGenerator.generate());
         store.setCurrent(newGame);
+        store.getCurrent().start();
         return "redirect:/game";
     }
 
@@ -72,9 +73,11 @@ public class GameController {
         if (correctLocations >= 4){
             currentGame.setWon(true);
             currentGame.setFinished(true);
+            currentGame.end();
             return "redirect:/result";
         } else if (currentGame.getAttempts() >= currentGame.getMaxAttempts()) {
             currentGame.setFinished(true);
+            currentGame.end();
             return "redirect:/result";
         }
 
@@ -85,6 +88,7 @@ public class GameController {
     public String result(Model model){
         Game currentGame = store.getCurrent();
         if (currentGame == null) return "redirect:/";
+
         model.addAttribute("currentGame", currentGame);
         return "result";
     }

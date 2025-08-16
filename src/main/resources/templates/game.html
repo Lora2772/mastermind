@@ -6,7 +6,7 @@
     Correct answer is: <span th:each="message: ${currentGame.answer}" th:text="${message}"></span>
 </div>
 <h3>
-    Attempt <span th:text="${currentGame.attempts}"></span> of <span th:text="${currentGame.maxAttempts}"></span>
+    You have <span th:text="${currentGame.maxAttempts - currentGame.attempts}"></span> attempts left.
 </h3>
 <form th:action="@{/guess}" method="post"> Enter your guess here:
     <input name="input" maxlength="4" pattern="\d{4}" required>
@@ -36,6 +36,9 @@
 </table>
 
 <br>
+<form th:action="@{/}" method="get">
+    <button type="submit">Back to Home</button>
+</form>
 <form th:action="@{/restart}" method="post">
     <button type="submit">Abandon and Restart</button>
 </form>

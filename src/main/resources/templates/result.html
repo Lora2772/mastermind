@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body th:object="${currentGame}">
-<h1>Game Over</h1>
+<h1>Game Over. Time spent: <span th:each="message: ${currentGame.getTimeSpentInSeconds()}" th:text="${message}"></span></h1>
 <h2 th:text="${currentGame.won} ? 'You won!' : 'Out of attempts.'"></h2>
 <h3>Answer is: <strong th:text="${currentGame.answer}"></strong></h3>
 
