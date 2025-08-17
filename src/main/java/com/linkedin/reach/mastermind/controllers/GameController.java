@@ -2,6 +2,7 @@ package com.linkedin.reach.mastermind.controllers;
 
 import com.linkedin.reach.mastermind.model.Game;
 import com.linkedin.reach.mastermind.model.Guess;
+import com.linkedin.reach.mastermind.model.HumanPlayer;
 import com.linkedin.reach.mastermind.services.GameStore;
 import com.linkedin.reach.mastermind.services.PublicApiAnswerGenerator;
 import com.linkedin.reach.mastermind.services.CheckService;
@@ -42,6 +43,73 @@ public class GameController {
         return "redirect:/game";
     }
 
+    @PostMapping("/initiateMultiPlayerGame")
+    public String initiateMultiPlayerGame(RedirectAttributes ra, @RequestParam String playerCount){
+        Game newGame = new Game(publicApiAnswerGenerator.generate());
+
+        int count = Integer.parseInt(playerCount);
+
+        for (int i = 0; i < count; i++) {
+            newGame.addPlayer(new HumanPlayer());
+        }
+
+        store.setCurrent(newGame);
+        return "redirect:/multiPlayerGame";
+    }
+
+    @GetMapping("/multiPlayerGame")
+    public String multiPlayerGame(Model model, RedirectAttributes ra){
+        Game currentGame = store.getCurrent();
+        if (currentGame == null) return "redirect:/";
+        if (currentGame.isFinished()) return "redirect:/result";
+        model.addAttribute("currentGame", currentGame);
+        return "multiPlayerGame";
+    }
+
+    @PostMapping("/multiPlayerGuess")
+    public String multiPlayerGuess(RedirectAttributes ra, @RequestParam String input)  {
+
+        Game currentGame = store.getCurrent();
+
+        HumanPlayer currentPlayer = currentGame.getCurrentPlayer();
+        int correctNumbers = checkService.countCorrectNumbers(input, currentGame.getAnswer());
+        int correctLocations = checkService.countCorrectLocations(input, currentGame.getAnswer());
+        if (!inputValidator.validate(input)) {
+            ra.addFlashAttribute("showError", true);
+            return "redirect:/multiPlayerGuess";
+        }
+
+        ra.addFlashAttribute("correctNumbers", correctNumbers);
+        ra.addFlashAttribute("correctLocations", correctLocations);
+        if(correctNumbers > 0){
+            ra.addFlashAttribute("showBoth", true);
+        } else {
+            ra.addFlashAttribute("showMessage", true);
+        }
+//        currentGame.getGuessHistory().add(new Guess(input, correctNumbers, correctLocations));
+        currentPlayer.takeGuess(new Guess(input, correctNumbers, correctLocations));
+
+        if (correctLocations >= 4){
+            currentGame.setWon(true);
+            currentGame.setFinished(true);
+            currentGame.end();
+            currentPlayer.setWon(true);
+            currentGame.setWinner(currentPlayer);
+            return "redirect:/result";
+        } else if (currentPlayer.getGuessCount() >= currentGame.getMaxAttempts()) {
+            currentPlayer.setLost(true);
+            if (currentGame.peekNextPlayer().getLost()) {
+                currentGame.setFinished(true);
+                currentGame.end();
+            }
+            return "redirect:/result";
+        }
+
+        currentGame.getNextPlayer();
+
+        return "redirect:/multiPlayerGame";
+    }
+
     @GetMapping("/game")
     public String game(Model model, RedirectAttributes ra){
         Game currentGame = store.getCurrent();
@@ -68,17 +136,17 @@ public class GameController {
         } else {
             ra.addFlashAttribute("showMessage", true);
         }
-        currentGame.getGuessHistory().add(new Guess(input, correctNumbers, correctLocations));
+//        currentGame.getGuessHistory().add(new Guess(input, correctNumbers, correctLocations));
 
         if (correctLocations >= 4){
             currentGame.setWon(true);
             currentGame.setFinished(true);
             currentGame.end();
             return "redirect:/result";
-        } else if (currentGame.getAttempts() >= currentGame.getMaxAttempts()) {
-            currentGame.setFinished(true);
-            currentGame.end();
-            return "redirect:/result";
+//        } else if (currentGame.getAttempts() >= currentGame.getMaxAttempts()) {
+//            currentGame.setFinished(true);
+//            currentGame.end();
+//            return "redirect:/result";
         }
 
         return "redirect:/game";

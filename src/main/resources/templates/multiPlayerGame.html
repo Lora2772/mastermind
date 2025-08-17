@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body th:object="${currentGame}">
+<div style="color:slategrey">
+    Correct answer is: <span th:each="message: ${currentGame.answer}" th:text="${message}"></span>
+</div>
+<h3>
+    User: <span th:text="${currentGame.getCurrentPlayer()}"></span>, You have <span th:text="${currentGame.maxAttempts - currentGame.getCurrentPlayer().getGuessCount()}"></span> attempts left.
+</h3>
+<form th:action="@{/multiPlayerGuess}" method="post"> Enter your guess here:
+    <input name="input" maxlength="4" pattern="\d{4}" required>
+    <button type="submit">Submit Guess</button>
+</form>
+<div th:if="${showError}" style="color:red">
+    Each digit must be 0 ~ 7 !!!
+</div>
+
+<br>
+<div th:if="${showBoth}" style="color:darkgreen">
+    You have guessed <span th:text="${correctNumbers}"></span> correct numbers and <span th:text="${correctLocations}"></span> correct locations.
+</div>
+<div th:if="${showMessage}" style="color:darkblue">
+    All incorrect. Please try again.
+</div>
+
+<h4>History</h4>
+
+<li th:each="player : ${currentGame.players}">
+    <ul>
+        <table border="1" cellpadding="4" cellspacing="0">
+            <tr><th>#</th><th>Guess</th><th>Correct Numbers</th><th>Correct Locations</th></tr>
+            <tr th:each="g, st : ${player.guessList}">
+                <td th:text="${st.index + 1}"></td>
+                <td th:text="${g.input}"></td>
+                <td th:text="${g.correctNumbers}"></td>
+                <td th:text="${g.correctLocations}"></td>
+            </tr>
+        </table>
+    </ul>
+</li>
+
+
+
+<br>
+<form th:action="@{/}" method="get">
+    <button type="submit">Back to Home</button>
+</form>
+<form th:action="@{/restart}" method="post">
+    <button type="submit">Abandon and Restart</button>
+</form>
+</body>
+</html>

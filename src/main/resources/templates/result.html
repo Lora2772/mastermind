@@ -3,13 +3,13 @@
 
 <body th:object="${currentGame}">
 <h1>Game Over. Time spent: <span th:each="message: ${currentGame.getTimeSpentInSeconds()}" th:text="${message}"></span></h1>
-<h2 th:text="${currentGame.won} ? 'You won!' : 'Out of attempts.'"></h2>
+<h2 th:text="${currentGame.winner != null} ? '${currentGame.winner.playerId} won!' : 'All players Out of attempts.'"></h2>
 <h3>Answer is: <strong th:text="${currentGame.answer}"></strong></h3>
 
 <h4>Your Attempts</h4>
 <table border="1" cellpadding="4" cellspacing="0">
     <tr><th>#</th><th>Guess</th><th>Correct Numbers</th><th>Correct Positions</th></tr>
-    <tr th:each="g, st : ${currentGame.getGuessHistory()}">
+    <tr th:each="g, st : ${currentGame.winner.getGuessList()}">
         <td th:text="${st.index + 1}"></td>
         <td th:text="${g.input}"></td>
         <td th:text="${g.correctNumbers}"></td>
