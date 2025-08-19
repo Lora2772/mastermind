@@ -29,7 +29,7 @@ public class GameController {
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("hasGame", gameManager.hasGame());
+        renderingService.renderGameManager(model, gameManager);
         return "index";
     }
 
@@ -51,7 +51,7 @@ public class GameController {
         if (currentGame == null) return "redirect:/";
         if (currentGame.isFinished()) return "redirect:/result";
 
-        renderingService.renderGame(model, currentGame);
+        renderingService.renderGameManager(model, gameManager);
         return "game";
     }
 
@@ -62,6 +62,7 @@ public class GameController {
         if (currentGame != null && !currentGame.isFinished()) {
             if (!inputValidator.validate(input)) {
                 ra.addFlashAttribute("showError", true);
+                renderingService.renderRedirectAttributesForError(ra, "Each digit must be 0 ~ 7 !!!");
                 return "redirect:/game";
             }
 
@@ -70,7 +71,7 @@ public class GameController {
             currentGame.getGuessHistory().add(new Guess(input, correctNumbers, correctLocations));
 
             gameManager.checkGameStatus(currentGame);
-            renderingService.renderRedirectAttributes(ra, currentGame);
+            renderingService.renderRedirectAttributesForGame(ra, currentGame);
 
             return "redirect:/game";
         }
@@ -82,7 +83,7 @@ public class GameController {
         Game currentGame = gameManager.getCurrent();
         if (currentGame == null) return "redirect:/";
 
-        renderingService.renderGame(model, currentGame);
+        renderingService.renderGameManager(model, gameManager);
         return "result";
     }
 

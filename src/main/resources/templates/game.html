@@ -12,17 +12,8 @@
     <input name="input" maxlength="4" pattern="\d{4}" required>
     <button type="submit">Submit Guess</button>
 </form>
-<div th:if="${showError}" style="color:red">
-    Each digit must be 0 ~ 7 !!!
-</div>
 
-<br>
-<div th:if="${showBoth}" style="color:darkgreen">
-    You have guessed <span th:text="${correctNumbers}"></span> correct numbers and <span th:text="${correctLocations}"></span> correct locations.
-</div>
-<div th:if="${showMessage}" style="color:darkblue">
-    All incorrect. Please try again.
-</div>
+<span th:text="${popupMessage}" th:style="'color:' + ${colorStyle}"></span>
 
 <h4>History</h4>
 <table border="1" cellpadding="4" cellspacing="0">

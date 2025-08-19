@@ -30,25 +30,25 @@ Following the MVC architecture, the application includes models for a Game class
 - **Extension:** Timer for entire game
 
 ## Process
-The project began with the implementation of a backend service to generate a four-digit answer, initially using Java’s Random class, along with corresponding JUnit tests to verify its correctness. 
+1. The project began with the implementation of a backend service to generate a four-digit answer, initially using Java’s Random class, along with corresponding JUnit tests to verify its correctness. 
 
-Once this foundation was in place, a Game class and controller were created to support game initialization, allowing a new session to be started from the home page. 
+2. Once this foundation was in place, a Game class and controller were created to support game initialization from the home page. 
 
-A Guess class was then introduced to handle user input, enabling players to enter four-digit guesses while tracking and displaying the number of attempts. 
+3. A Guess class was then introduced to handle user input, enabling players to enter four-digit guesses while tracking and displaying the number of attempts. 
 
-To extend functionality, logic was developed to calculate the number of correct digits and their positions for each guess, and guess history was displayed in a table for ongoing reference. 
+4. To extend functionality, logic was developed to calculate the number of correct digits and their positions for each guess, and guess history was displayed in a table for ongoing reference. 
 
-Input validation was also added so that invalid entries, such as digits greater than seven, triggered immediate warning messages. Instant feedback mechanisms were integrated into the game page, providing users with colored indicators after each submission. 
+5. Input validation was also added so that invalid entries, such as digits greater than seven, triggered immediate warning messages. Instant feedback mechanisms were integrated into the game page, providing users with colored indicators after each submission. 
 
-A dedicated result page was implemented to present the final outcome—whether the player won or lost—along with the complete guess history once the game concluded or all attempts were exhausted. 
+6. A dedicated result page was implemented to present the final outcome—whether the player won or lost—along with the complete guess history once the game concluded or all attempts were exhausted. 
 
-The answer generation service was later enhanced by switching from Java’s random number generator to the random.org public API, with checked exceptions handled and redundant controller code removed for better maintainability. 
+7. The answer generation service was later enhanced by switching from Java’s random number generator to the random.org public API, with checked exceptions handled and redundant controller code removed for better maintainability. 
 
-Additional features were developed to allow restarting or resuming games, addressing lifecycle edge cases and ensuring correct navigation between home, game, and result pages. 
+8. Additional features were developed to allow restarting or resuming games, addressing lifecycle edge cases and ensuring correct navigation between home, game, and result pages. 
 
-Robustness was further improved by introducing a fallback mechanism so that when the random.org API returned a “server busy” response, the application automatically reverted to the Java-based generator. The CheckService class was optimized by replacing HashMaps with arrays in the number-counting logic. 
+9. Robustness was further improved by introducing a fallback mechanism so that when the random.org API returned a “server busy” response, the application automatically reverted to the Java-based generator. The CheckService class was optimized by replacing HashMaps with arrays in the number-counting logic. 
 
-Finally, the attempt counter message was refined to display remaining attempts, aligning the user experience with assignment requirements.
+10. Finally, the attempt counter message was refined to display remaining attempts, aligning the user experience with assignment requirements.
 
 ## Implemented extension
 Add a timer for the entire game - displayed the time spent on the result page.

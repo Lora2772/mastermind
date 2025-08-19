@@ -11,20 +11,30 @@ import java.util.List;
 @Component
 public class RenderingService {
 
-    public void renderGame(Model model, Game currentGame) {
-        model.addAttribute("currentGame", currentGame);
+    public void renderGameManager(Model model, GameManager gameManager) {
+        model.addAttribute("gameManager", gameManager);
+        model.addAttribute("currentGame", gameManager.getCurrent());
     }
 
-    public void renderRedirectAttributes(RedirectAttributes ra, Game currentGame) {
+    public void renderRedirectAttributesForGame(RedirectAttributes ra, Game currentGame) {
         List<Guess> guesses = currentGame.getGuessHistory();
         Guess recentGuess = guesses.get(guesses.size() - 1);
 
-        ra.addFlashAttribute("correctNumbers", recentGuess.getCorrectNumbers());
-        ra.addFlashAttribute("correctLocations", recentGuess.getCorrectLocations());
-        if(recentGuess.getCorrectNumbers() > 0){
-            ra.addFlashAttribute("showBoth", true);
+        String message;
+
+        if(recentGuess.getCorrectNumbers() > 0) {
+            message = "You have guessed " + recentGuess.getCorrectNumbers() + " correct numbers and " + recentGuess.getCorrectLocations() + " correct locations.";
+            ra.addFlashAttribute("colorStyle", "darkgreen");
         } else {
-            ra.addFlashAttribute("showMessage", true);
+            message = "All incorrect. Please try again.";
+            ra.addFlashAttribute("colorStyle", "darkblue");
         }
+
+        ra.addFlashAttribute("popupMessage", message);
+    }
+
+    public void renderRedirectAttributesForError(RedirectAttributes ra, String errorMessage) {
+        ra.addFlashAttribute("popupMessage", errorMessage);
+        ra.addFlashAttribute("colorStyle", "red");
     }
 }
