@@ -1,8 +1,9 @@
 package com.linkedin.reach.mastermind.controllers;
 
-import com.linkedin.reach.mastermind.model.Game;
-import com.linkedin.reach.mastermind.model.Guess;
-import com.linkedin.reach.mastermind.services.GameStore;
+import com.linkedin.reach.mastermind.models.Game;
+import com.linkedin.reach.mastermind.models.Guess;
+import com.linkedin.reach.mastermind.services.GameManager;
+import com.linkedin.reach.mastermind.services.GameManager;
 import com.linkedin.reach.mastermind.services.PublicApiAnswerGenerator;
 import com.linkedin.reach.mastermind.services.CheckService;
 import com.linkedin.reach.mastermind.services.InputValidator;
@@ -16,12 +17,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class GameController {
-    private final GameStore store;
+    private final GameManager store;
     private final PublicApiAnswerGenerator publicApiAnswerGenerator;
     private final InputValidator inputValidator;
     private final CheckService checkService;
 
-    public GameController(GameStore store, PublicApiAnswerGenerator publicApiAnswerGenerator, InputValidator inputValidator, CheckService checkService){
+    public GameController(GameManager store, PublicApiAnswerGenerator publicApiAnswerGenerator, InputValidator inputValidator, CheckService checkService){
         this.store = store;
         this.publicApiAnswerGenerator = publicApiAnswerGenerator;
         this.inputValidator = inputValidator;

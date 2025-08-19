@@ -1,4 +1,4 @@
-package com.linkedin.reach.mastermind.model;
+package com.linkedin.reach.mastermind.models;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

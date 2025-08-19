@@ -3,7 +3,7 @@
 
 <body th:object="${currentGame}">
 <div style="color:slategrey">
-    Correct answer is: <span th:each="message: ${currentGame.answer}" th:text="${message}"></span>
+    Correct answer is: <span th:text="${currentGame.answer}"></span>
 </div>
 <h3>
     You have <span th:text="${currentGame.maxAttempts - currentGame.attempts}"></span> attempts left.

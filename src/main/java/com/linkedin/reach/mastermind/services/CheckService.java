@@ -9,11 +9,11 @@ import java.util.Map;
 public class CheckService {
     public int countCorrectNumbers(String answer, String input){
         int correctNumber = 0;
-        int[] answerFreq = new int[8];
+        int[] answerFreq = new int[10];
         for(int i = 0; i < answer.length(); i++){
             answerFreq[answer.charAt(i) - '0']++;
         }
-        int[] inputFreq = new int[8];
+        int[] inputFreq = new int[10];
         for(int i = 0; i < input.length(); i++){
             inputFreq[input.charAt(i) - '0']++;
         }

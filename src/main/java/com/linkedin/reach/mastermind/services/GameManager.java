@@ -1,10 +1,10 @@
 package com.linkedin.reach.mastermind.services;
 
-import com.linkedin.reach.mastermind.model.Game;
+import com.linkedin.reach.mastermind.models.Game;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GameStore {
+public class GameManager {
     private Game current;
     public Game getCurrent(){
         return current;

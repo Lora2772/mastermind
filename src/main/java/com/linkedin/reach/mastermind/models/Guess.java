@@ -1,4 +1,4 @@
-package com.linkedin.reach.mastermind.model;
+package com.linkedin.reach.mastermind.models;
 
 public class Guess {
     private String input;
