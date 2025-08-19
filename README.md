@@ -8,7 +8,7 @@ Java 17+
 By default, the application runs on **http://localhost:8080**.
 
 ### Run with Gradle
-Please click the link below, and the command will execute in your terminal.
+Please execute the command below in the project’s root directory.
 ```bash
 ./gradlew bootRun
 ```
@@ -19,6 +19,15 @@ A web application with a simple HTML UI was designed, with the backend implement
 
 ## Code Structure
 Following the MVC architecture, the application includes models for a Game class and a Guess class, a controller, and Services that handle the core logic for computing the number of correct digits and their positions.
+
+## Features
+- Service to generate 4-digit answer (random.org public API)
+- Game initialization
+- Guess entry (input validation) and attempts tracking
+- Service to compute number of correct digits and locations
+- Instant feedback interaction and history display
+- Determine won/lost – show result page
+- **Extension:** Timer for entire game
 
 ## Process
 The project began with the implementation of a backend service to generate a four-digit answer, initially using Java’s Random class, along with corresponding JUnit tests to verify its correctness. 
@@ -41,5 +50,5 @@ Robustness was further improved by introducing a fallback mechanism so that when
 
 Finally, the attempt counter message was refined to display remaining attempts, aligning the user experience with assignment requirements.
 
-## Implemented extensions
+## Implemented extension
 Add a timer for the entire game - displayed the time spent on the result page.
