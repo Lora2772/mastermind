@@ -4,14 +4,14 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class CheckService {
+public class ComputeService {
     public int countCorrectNumbers(String answer, String input){
         int correctNumber = 0;
-        int[] answerFreq = new int[10];
+        int[] answerFreq = new int[8];
         for(int i = 0; i < answer.length(); i++){
             answerFreq[answer.charAt(i) - '0']++;
         }
-        int[] inputFreq = new int[10];
+        int[] inputFreq = new int[8];
         for(int i = 0; i < input.length(); i++){
             inputFreq[input.charAt(i) - '0']++;
         }

@@ -8,6 +8,7 @@ Java 17+
 By default, the application runs on **http://localhost:8080**.
 
 ### Run with Gradle
+Please click the link below, and the command will execute in your terminal.
 ```bash
 ./gradlew bootRun
 ```

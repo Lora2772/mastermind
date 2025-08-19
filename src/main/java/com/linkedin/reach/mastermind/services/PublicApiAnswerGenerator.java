@@ -1,5 +1,7 @@
 package com.linkedin.reach.mastermind.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -11,12 +13,16 @@ import java.net.http.HttpResponse;
 @Service
 public class PublicApiAnswerGenerator {
 
-    JavaAnswerGenerator javaAnswerGenerator;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PublicApiAnswerGenerator.class);
+
+    private final HttpClient httpClient;
+
+    private JavaAnswerGenerator javaAnswerGenerator;
+
     public PublicApiAnswerGenerator(JavaAnswerGenerator javaAnswerGenerator) {
         this.javaAnswerGenerator = javaAnswerGenerator;
+        this.httpClient = HttpClient.newHttpClient();
     }
-
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     public String generate() {
         String url = "https://www.random.org/integers/"
@@ -29,7 +35,7 @@ public class PublicApiAnswerGenerator {
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            // System.out.println(response.body());
+            LOGGER.info("Random public api Response: \n{}", response.body());
             // matches any whitespace character, including:
             // a regular space (' ')
             // a tab (\t)
@@ -42,12 +48,11 @@ public class PublicApiAnswerGenerator {
                 sb.append(part);
             }
             if(sb.length() != 4){
-                System.out.println("Using java api to generate 4 digits");
-                return javaAnswerGenerator.generate();
-
-            } else {
-                System.out.println("Using public api to generate 4 digits");
+                String generatedDigitByRandom = javaAnswerGenerator.generate();
+                LOGGER.info("Generated digit by calling java random class: {}", generatedDigitByRandom);
+                return generatedDigitByRandom;
             }
+            LOGGER.info("Generated digit by calling public API: {}", sb);
 
             return sb.toString();
 
