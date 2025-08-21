@@ -29,7 +29,7 @@ public class GameController {
 
     @GetMapping("/")
     public String home(Model model) {
-        renderingService.renderGameManager(model, gameManager);
+        renderingService.renderGame(model, gameManager);
         return "index";
     }
 
@@ -51,7 +51,7 @@ public class GameController {
         if (currentGame == null) return "redirect:/";
         if (currentGame.isFinished()) return "redirect:/result";
 
-        renderingService.renderGameManager(model, gameManager);
+        renderingService.renderGame(model, gameManager);
         return "game";
     }
 
@@ -66,12 +66,12 @@ public class GameController {
                 return "redirect:/game";
             }
 
-            int correctNumbers = computeService.countCorrectNumbers(input, currentGame.getAnswer());
-            int correctLocations = computeService.countCorrectLocations(input, currentGame.getAnswer());
+            int correctNumbers = computeService.countCorrectNumbers(currentGame.getAnswer(), input);
+            int correctLocations = computeService.countCorrectLocations(currentGame.getAnswer(), input);
             currentGame.getGuessHistory().add(new Guess(input, correctNumbers, correctLocations));
 
-            gameManager.checkGameStatus(currentGame);
-            renderingService.renderRedirectAttributesForGame(ra, currentGame);
+            gameManager.checkGameOverStatus(currentGame);
+            renderingService.renderRedirectAttributesForInstantFeedback(ra, currentGame);
 
             return "redirect:/game";
         }
@@ -83,7 +83,7 @@ public class GameController {
         Game currentGame = gameManager.getCurrent();
         if (currentGame == null) return "redirect:/";
 
-        renderingService.renderGameManager(model, gameManager);
+        renderingService.renderGame(model, gameManager);
         return "result";
     }
 

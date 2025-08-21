@@ -22,7 +22,7 @@ public class GameManager {
         return current != null;
     }
 
-    public void checkGameStatus(Game current) {
+    public void checkGameOverStatus(Game current) {
         List<Guess> guesses = current.getGuessHistory();
         Guess recentGuess = guesses.get(guesses.size() - 1);
 

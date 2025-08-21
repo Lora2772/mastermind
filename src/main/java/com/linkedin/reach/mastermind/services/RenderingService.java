@@ -11,12 +11,12 @@ import java.util.List;
 @Component
 public class RenderingService {
 
-    public void renderGameManager(Model model, GameManager gameManager) {
+    public void renderGame(Model model, GameManager gameManager) {
         model.addAttribute("gameManager", gameManager);
         model.addAttribute("currentGame", gameManager.getCurrent());
     }
 
-    public void renderRedirectAttributesForGame(RedirectAttributes ra, Game currentGame) {
+    public void renderRedirectAttributesForInstantFeedback(RedirectAttributes ra, Game currentGame) {
         List<Guess> guesses = currentGame.getGuessHistory();
         Guess recentGuess = guesses.get(guesses.size() - 1);
 
