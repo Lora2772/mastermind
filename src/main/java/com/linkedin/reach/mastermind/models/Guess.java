@@ -5,9 +5,9 @@ public class Guess {
     private int correctNumbers;
     private int correctLocations;
 
-    public Guess(String input, int correctNumber, int correctLocations){
+    public Guess(String input, int correctNumbers, int correctLocations){
         this.input = input;
-        this.correctNumbers = correctNumber;
+        this.correctNumbers = correctNumbers;
         this.correctLocations = correctLocations;
     }
 

@@ -61,7 +61,6 @@ public class GameController {
 
         if (currentGame != null && !currentGame.isFinished()) {
             if (!inputValidator.validate(input)) {
-                ra.addFlashAttribute("showError", true);
                 renderingService.renderRedirectAttributesForError(ra, "Each digit must be 0 ~ 7 !!!");
                 return "redirect:/game";
             }
