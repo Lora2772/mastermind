@@ -1,15 +1,16 @@
 package com.linkedin.reach.mastermind.services;
 
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,70 +18,112 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PublicApiAnswerGeneratorTest {
+class PublicApiAnswerGeneratorTest {
 
-    @Mock
-    JavaAnswerGenerator javaAnswerGenerator;
-    @Mock
-    HttpClient httpClient;
-    @Mock
-    HttpResponse<Object> response;
-
-    @InjectMocks
     private PublicApiAnswerGenerator publicApiAnswerGenerator;
 
-    @Test
-    public void testGeneratedStringHasRightLength() {
-        String expectedDigit = "1234";
-        publicApiAnswerGenerator = new PublicApiAnswerGenerator(javaAnswerGenerator);
-        when(javaAnswerGenerator.generate()).thenReturn(expectedDigit);
+    @Mock
+    private JavaAnswerGenerator mockJavaAnswerGenerator;
 
-        String geneatedString = publicApiAnswerGenerator.generate();
+    @Mock
+    private HttpClient mockHttpClient;
 
-        assertEquals(4, geneatedString.length());
+    @Mock
+    private HttpResponse<String> mockHttpResponse;
+
+    @Captor
+    private ArgumentCaptor<HttpRequest> requestCaptor;
+
+    @Captor
+    private ArgumentCaptor<HttpResponse.BodyHandler<String>> bodyHandlerCaptor;
+
+    @BeforeEach
+    void setUp() {
+        publicApiAnswerGenerator = new PublicApiAnswerGenerator(mockJavaAnswerGenerator);
+        ReflectionTestUtils.setField(publicApiAnswerGenerator, "httpClient", mockHttpClient);
     }
 
     @Test
-    public void testGeneratedStringByJavaRandomClassWhenPublicApiReturnBadResponse() throws Exception {
-        String expectedDigit = "1234";
+    void test_generate_shouldReturnApiGeneratedString_whenApiCallIsSuccessful() throws IOException, InterruptedException {
+        when(mockHttpResponse.body()).thenReturn("1\n2\n3\n4\n");
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockHttpResponse);
 
-        try (MockedStatic<HttpClient> mocked = Mockito.mockStatic(HttpClient.class)) {
-            mocked.when(HttpClient::newHttpClient).thenReturn(httpClient);
+        String result = publicApiAnswerGenerator.generate();
 
-            publicApiAnswerGenerator = new PublicApiAnswerGenerator(javaAnswerGenerator);
+        assertNotNull(result);
+        assertEquals("1234", result);
+        verify(mockJavaAnswerGenerator, never()).generate();
+        verify(mockHttpClient, times(1)).send(requestCaptor.capture(), bodyHandlerCaptor.capture());
 
-            when(httpClient.send(any(), any())).thenReturn(response);
-            when(response.body()).thenReturn("Server busy exception");
-
-            when(javaAnswerGenerator.generate()).thenReturn(expectedDigit);
-            String generated = publicApiAnswerGenerator.generate();
-
-            // assert length is 4
-            assertEquals(4, generated.length());
-
-            // assert the right digits
-            assertEquals(expectedDigit, generated);
-
-            // assert javaAnswerGenerator is called
-            verify(javaAnswerGenerator, times(1)).generate();
-        }
+        HttpRequest sent = requestCaptor.getValue();
+        assertEquals("GET", sent.method());
+        URI uri = sent.uri();
+        assertNotNull(uri);
     }
 
     @Test
-    public void testGeneratedStringHasRightRange() {
-        String expectedDigit = "1234";
-        publicApiAnswerGenerator = new PublicApiAnswerGenerator(javaAnswerGenerator);
-        when(javaAnswerGenerator.generate()).thenReturn(expectedDigit);
+    void test_enerate_shouldThrowRuntimeException_whenApiCallThrowsIOException() throws IOException, InterruptedException {
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenThrow(new IOException("Network error"));
 
-        for (int i = 0; i < 10;i++) {
-            String geneatedString = publicApiAnswerGenerator.generate();
-            for (char c: geneatedString.toCharArray()) {
-                int number = c - '0';
-                if (number < 0 || number > 7) {
-                    fail();
-                }
-            }
-        }
+        RuntimeException e = assertThrows(RuntimeException.class, () -> publicApiAnswerGenerator.generate());
+        assertEquals("Failed to generate random numbers from Random.org", e.getMessage());
+        assertEquals(IOException.class, e.getCause().getClass());
 
+        verify(mockJavaAnswerGenerator, never()).generate();
+    }
+
+
+    @Test
+    void test_generate_shouldThrowRuntimeException_whenApiCallThrowsInterruptedException() throws IOException, InterruptedException {
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenThrow(new InterruptedException("Request interrupted"));
+
+        RuntimeException e = assertThrows(RuntimeException.class, () -> publicApiAnswerGenerator.generate());
+        assertEquals("Failed to generate random numbers from Random.org", e.getMessage());
+        assertEquals(InterruptedException.class, e.getCause().getClass());
+
+        verify(mockJavaAnswerGenerator, never()).generate();
+    }
+
+
+    @Test
+    void test_generate_shouldReturnJavaGeneratedString_whenApiResponseBodyIsTooShort() throws IOException, InterruptedException {
+        when(mockHttpResponse.body()).thenReturn("1\n2\n");
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockHttpResponse);
+        when(mockJavaAnswerGenerator.generate()).thenReturn("3456");
+
+        String result = publicApiAnswerGenerator.generate();
+
+        assertEquals("3456", result);
+        verify(mockJavaAnswerGenerator, times(1)).generate();
+    }
+
+    @Test
+    void test_generate_shouldReturnJavaGeneratedString_whenApiResponseBodyIsEmpty() throws IOException, InterruptedException {
+        when(mockHttpResponse.body()).thenReturn("");
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockHttpResponse);
+        when(mockJavaAnswerGenerator.generate()).thenReturn("7890");
+
+        String result = publicApiAnswerGenerator.generate();
+
+        assertEquals("7890", result);
+        verify(mockJavaAnswerGenerator, times(1)).generate();
+    }
+
+    @Test
+    void test_generate_shouldReturnApiProcessedString_whenApiResponseBodyHasNonDigitCharactersAndCorrectLength()
+            throws IOException, InterruptedException {
+        when(mockHttpResponse.body()).thenReturn("a\nb\nc\nd\n");
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockHttpResponse);
+
+        String result = publicApiAnswerGenerator.generate();
+
+        assertEquals("abcd", result);
+        verify(mockJavaAnswerGenerator, never()).generate();
     }
 }
