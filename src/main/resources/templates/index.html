@@ -9,12 +9,12 @@
 </div>
 <br>
 
-<form th:action="@{/initiateGame}" method="post">
-    <button type="submit">Start New Game</button>
+<form th:action="@{/difficultyLevel}" method="get">
+    <button type="submit">Choose difficulty level</button>
 </form>
 
-<div th:if="${gameManager.hasGame()}" style="margin-top:8px">
-    <form th:action="@{/game}" method="get">
+<div th:if="${currentGame != null}" style="margin-top:8px">
+    <form th:action="@{|/${currentGame.gameId}/game|}" method="get">
         <button type="submit">Resume Current Game</button>
     </form>
 </div>

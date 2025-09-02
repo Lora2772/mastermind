@@ -2,6 +2,7 @@ package com.linkedin.reach.mastermind.services;
 
 import com.linkedin.reach.mastermind.models.Game;
 import com.linkedin.reach.mastermind.models.Guess;
+import com.linkedin.reach.mastermind.repository.GameRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,6 +10,22 @@ import java.util.List;
 @Component
 public class GameManager {
     private Game current;
+    private GameRepository gameRepository;
+
+    public GameManager(GameRepository gameRepository) {
+        this.gameRepository = gameRepository;
+    }
+
+    public Game findByGameId(String gameId) {
+        return gameRepository.findByGameId(gameId);
+    }
+    public Game deleteByGameId(String gameId) {
+        return gameRepository.deleteByGameId(gameId);
+    }
+    public Game save(Game game) {
+        return gameRepository.save(game);
+    }
+
     public Game getCurrent(){
         return current;
     }

@@ -1,13 +1,20 @@
 package com.linkedin.reach.mastermind.models;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+@Document("games")
 public class Game {
+    @Id
+    private String gameId;
     private String answer;
-    private final int maxAttempts = 10;
+    private int maxAttempts;
     private List<Guess> guessHistory;
     private boolean won;
     private boolean finished;
@@ -17,6 +24,15 @@ public class Game {
     public Game(String answer){
         this.answer = answer;
         this.guessHistory = new ArrayList<>();
+        this.gameId = UUID.randomUUID().toString();
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
     }
 
     public String getAnswer(){

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<form th:action="@{/initiateGame}" method="post">
+  <button type="submit" name="level" value="easy">Easy</button>
+  <button type="submit" name="level" value="medium">Medium</button>
+  <button type="submit" name="level" value="hard">Hard</button>
+</form>
+
+</body>
+</html>

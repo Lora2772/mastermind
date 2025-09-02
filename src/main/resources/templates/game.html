@@ -8,7 +8,7 @@
 <h3>
     You have <span th:text="${currentGame.maxAttempts - currentGame.attempts}"></span> attempts left.
 </h3>
-<form th:action="@{/guess}" method="post"> Enter your guess here:
+<form th:action="@{|/${currentGame.gameId}/guess|}" method="post"> Enter your guess here:
     <input name="input" maxlength="4" pattern="\d{4}" required>
     <button type="submit">Submit Guess</button>
 </form>
@@ -30,7 +30,7 @@
 <form th:action="@{/}" method="get">
     <button type="submit">Back to Home</button>
 </form>
-<form th:action="@{/restart}" method="post">
+<form th:action="@{|/${currentGame.gameId}/restart|}" method="post">
     <button type="submit">Abandon and Restart</button>
 </form>
 </body>

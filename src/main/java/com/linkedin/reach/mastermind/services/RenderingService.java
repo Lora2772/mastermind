@@ -16,6 +16,11 @@ public class RenderingService {
         model.addAttribute("currentGame", gameManager.getCurrent());
     }
 
+    public void renderGame(Model model, GameManager gameManager, Game currentGame) {
+        model.addAttribute("gameManager", gameManager);
+        model.addAttribute("currentGame", currentGame);
+    }
+
     public void renderRedirectAttributesForInstantFeedback(RedirectAttributes ra, Game currentGame) {
         List<Guess> guesses = currentGame.getGuessHistory();
         Guess recentGuess = guesses.get(guesses.size() - 1);

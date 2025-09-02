@@ -1,197 +1,188 @@
 package com.linkedin.reach.mastermind.controllers;
 
 import com.linkedin.reach.mastermind.models.Game;
-import com.linkedin.reach.mastermind.models.Guess;
-import com.linkedin.reach.mastermind.services.*;
+import com.linkedin.reach.mastermind.services.ComputeService;
+import com.linkedin.reach.mastermind.services.GameManager;
+import com.linkedin.reach.mastermind.services.InputValidator;
+import com.linkedin.reach.mastermind.services.PublicApiAnswerGenerator;
+import com.linkedin.reach.mastermind.services.RenderingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ui.ConcurrentModel;
-import org.springframework.ui.Model;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.view.AbstractView;
+import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(GameController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class GameControllerTest {
 
-    private GameController controller;
+    @Autowired
+    private MockMvc mockMvc;
 
-    private GameManager gameManager;
-    private PublicApiAnswerGenerator publicApiAnswerGenerator;
-    private InputValidator inputValidator;
-    private ComputeService computeService;
-    private RenderingService renderingService;
+    @MockitoBean private GameManager gameManager;
+    @MockitoBean private PublicApiAnswerGenerator publicApiAnswerGenerator;
+    @MockitoBean private InputValidator inputValidator;
+    @MockitoBean private ComputeService computeService;
+    @MockitoBean private RenderingService renderingService;
+    @MockitoBean private ThymeleafViewResolver thymeleafViewResolver;
+
+    private static final String GAME_ID = "g-123";
 
     @BeforeEach
-    void setUp() {
-        gameManager = mock(GameManager.class);
-        publicApiAnswerGenerator = mock(PublicApiAnswerGenerator.class);
-        inputValidator = mock(InputValidator.class);
-        computeService = mock(ComputeService.class);
-        renderingService = mock(RenderingService.class);
-
-        controller = new GameController(
-                gameManager,
-                publicApiAnswerGenerator,
-                inputValidator,
-                computeService,
-                renderingService
-        );
+    void stubViewResolver() throws Exception {
+        View v = new AbstractView() {
+            @Override
+            protected void renderMergedOutputModel(Map<String, Object> model, jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) {}
+        };
+        when(thymeleafViewResolver.resolveViewName(anyString(), any(Locale.class))).thenReturn(v);
     }
 
-    @Test
-    void test_home_rendersIndex() {
-        Model model = new ConcurrentModel();
-
-        String view = controller.home(model);
-
-        assertEquals("index", view);
-        verify(renderingService).renderGame(model, gameManager);
-    }
-
-    @Test
-    void test_initiateGame_success() {
-        when(publicApiAnswerGenerator.generate()).thenReturn("1234");
-
-        ArgumentCaptor<Game> captor = ArgumentCaptor.forClass(Game.class);
-        doAnswer(inv -> {
-            Game created = inv.getArgument(0, Game.class);
-            when(gameManager.getCurrent()).thenReturn(created);
-            return null;
-        }).when(gameManager).setCurrent(captor.capture());
-
-        String result = controller.initiateGame();
-
-        assertEquals("redirect:/game", result);
-        verify(publicApiAnswerGenerator).generate();
-        verify(gameManager).setCurrent(any(Game.class));
-        verify(gameManager, atLeastOnce()).getCurrent(); // to call start()
-    }
-
-    @Test
-    void test_initiateGame_failure() {
-        when(publicApiAnswerGenerator.generate()).thenThrow(new RuntimeException("testException"));
-
-        String result = controller.initiateGame();
-
-        assertEquals("redirect:/", result);
-    }
-
-    @Test
-    void test_game_noCurrent_redirectHome() {
-        when(gameManager.getCurrent()).thenReturn(null);
-        String view = controller.game(new ConcurrentModel(), new RedirectAttributesModelMap());
-        assertEquals("redirect:/", view);
-    }
-
-    @Test
-    void test_game_finished_redirectResult() {
+    private Game mockGame(String id, boolean finished) {
         Game g = mock(Game.class);
-        when(gameManager.getCurrent()).thenReturn(g);
-        when(g.isFinished()).thenReturn(true);
-
-        String view = controller.game(new ConcurrentModel(), new RedirectAttributesModelMap());
-
-        assertEquals("redirect:/result", view);
+        when(g.getGameId()).thenReturn(id);
+        when(g.isFinished()).thenReturn(finished);
+        return g;
     }
 
     @Test
-    void test_game_active_rendersGame() {
-        Game g = mock(Game.class);
-        when(gameManager.getCurrent()).thenReturn(g);
-        when(g.isFinished()).thenReturn(false);
-        Model model = new ConcurrentModel();
+    void getGame_notFinished_shouldRenderGame() throws Exception {
+        Game current = mockGame(GAME_ID, false);
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(current);
 
-        String view = controller.game(model, new RedirectAttributesModelMap());
+        mockMvc.perform(get("/{gameId}/game", GAME_ID))
+                .andExpect(status().isOk())
+                .andExpect(view().name("game"));
 
-        assertEquals("game", view);
-        verify(renderingService).renderGame(model, gameManager);
+        verify(renderingService).renderGame(any(), eq(gameManager), eq(current));
     }
 
     @Test
-    void test_guess_noCurrent_redirectHome() {
-        when(gameManager.getCurrent()).thenReturn(null);
-        String view = controller.guess(new RedirectAttributesModelMap(), "0123");
-        assertEquals("redirect:/", view);
+    void getGame_finished_shouldRedirectResult() throws Exception {
+        Game finished = mockGame(GAME_ID, true);
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(finished);
+
+        mockMvc.perform(get("/{gameId}/game", GAME_ID))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + GAME_ID + "/result"));
     }
 
     @Test
-    void test_guess_finished_redirectHome() {
-        Game g = mock(Game.class);
-        when(gameManager.getCurrent()).thenReturn(g);
-        when(g.isFinished()).thenReturn(true);
+    void getGame_notFound_shouldRedirectHome() throws Exception {
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(null);
 
-        String view = controller.guess(new RedirectAttributesModelMap(), "0123");
-
-        assertEquals("redirect:/", view);
+        mockMvc.perform(get("/{gameId}/game", GAME_ID))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
     }
 
     @Test
-    void test_guess_invalid_setsErrorFlashAndRedirects() {
-        Game g = mock(Game.class);
-        when(gameManager.getCurrent()).thenReturn(g);
-        when(g.isFinished()).thenReturn(false);
-        when(inputValidator.validate("9988")).thenReturn(false);
+    void postGuess_invalidInput_shouldRedirectBackWithFlash() throws Exception {
+        Game current = mockGame(GAME_ID, false);
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(current);
+        when(inputValidator.validate("abcd")).thenReturn(false);
 
-        RedirectAttributes ra = new RedirectAttributesModelMap();
-        String view = controller.guess(ra, "9988");
+        mockMvc.perform(post("/{gameId}/guess", GAME_ID).param("input", "abcd"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + GAME_ID + "/game"));
 
-        assertEquals("redirect:/game", view);
-        verify(renderingService).renderRedirectAttributesForError(ra, "Each digit must be 0 ~ 7 !!!");
+        verify(renderingService).renderRedirectAttributesForError(any(), eq("Each digit must be 0 ~ 7 !!!"));
         verifyNoInteractions(computeService);
-        verify(gameManager, never()).checkGameOverStatus(any());
     }
 
     @Test
-    void test_guess_valid_flowCompletes() {
-        Game game = new Game("0123");
-        when(gameManager.getCurrent()).thenReturn(game);
+    void postGuess_validInput_shouldComputeSaveAndRedirectBack() throws Exception {
+        Game current = mockGame(GAME_ID, false);
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(current);
         when(inputValidator.validate("0123")).thenReturn(true);
+        when(current.getAnswer()).thenReturn("0123");
+        when(current.getGuessHistory()).thenReturn(new ArrayList<>());
         when(computeService.countCorrectNumbers("0123", "0123")).thenReturn(4);
         when(computeService.countCorrectLocations("0123", "0123")).thenReturn(4);
 
-        RedirectAttributes ra = new RedirectAttributesModelMap();
-        String view = controller.guess(ra, "0123");
+        mockMvc.perform(post("/{gameId}/guess", GAME_ID).param("input", "0123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + GAME_ID + "/game"));
 
-        assertEquals("redirect:/game", view);
-        assertEquals(1, game.getGuessHistory().size());
-        Guess added = game.getGuessHistory().get(0);
-        assertEquals("0123", added.getInput());
-        assertEquals(4, added.getCorrectNumbers());
-        assertEquals(4, added.getCorrectLocations());
-
-        verify(gameManager).checkGameOverStatus(game);
-        verify(renderingService).renderRedirectAttributesForInstantFeedback(ra, game);
+        verify(computeService).countCorrectNumbers("0123", "0123");
+        verify(computeService).countCorrectLocations("0123", "0123");
+        verify(gameManager).checkGameOverStatus(current);
+        verify(renderingService).renderRedirectAttributesForInstantFeedback(any(), eq(current));
+        verify(gameManager).save(current);
     }
 
     @Test
-    void test_result_noCurrentGame_redirectHome() {
-        when(gameManager.getCurrent()).thenReturn(null);
-        String view = controller.result(new ConcurrentModel());
-        assertEquals("redirect:/", view);
+    void postGuess_finishedGame_shouldRedirectHome() throws Exception {
+        Game current = mockGame(GAME_ID, true);
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(current);
+
+        mockMvc.perform(post("/{gameId}/guess", GAME_ID).param("input", "0123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
     }
 
     @Test
-    void test_result_rendersResult() {
-        Game g = new Game("0123");
-        when(gameManager.getCurrent()).thenReturn(g);
-        Model model = new ConcurrentModel();
+    void initiateGame_shouldCreate_setSession_andRedirect() throws Exception {
+        when(publicApiAnswerGenerator.generate()).thenReturn("0123");
+        MockHttpSession session = new MockHttpSession();
 
-        String view = controller.result(model);
+        mockMvc.perform(post("/initiateGame").param("level", "easy").session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/*/game"))
+                .andExpect(request().sessionAttribute("gameId", notNullValue()));
 
-        assertEquals("result", view);
-        verify(renderingService).renderGame(model, gameManager);
+        ArgumentCaptor<Game> captor = ArgumentCaptor.forClass(Game.class);
+        verify(gameManager).save(captor.capture());
     }
 
     @Test
-    void restart_clearsAndRedirects() {
-        String view = controller.reset();
-        assertEquals("redirect:/", view);
-        verify(gameManager).clear();
+    void result_existingGame_shouldRenderResultView() throws Exception {
+        Game current = mockGame(GAME_ID, false);
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(current);
+
+        mockMvc.perform(get("/{gameId}/result", GAME_ID))
+                .andExpect(status().isOk())
+                .andExpect(view().name("result"));
+
+        verify(renderingService).renderGame(any(), eq(gameManager), eq(current));
+    }
+
+    @Test
+    void result_missingGame_shouldRedirectHome() throws Exception {
+        when(gameManager.findByGameId(GAME_ID)).thenReturn(null);
+
+        mockMvc.perform(get("/{gameId}/result", GAME_ID))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    void restart_shouldDeleteGame_clearSession_andRedirectHome() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("gameId", GAME_ID);
+
+        mockMvc.perform(post("/{gameId}/restart", GAME_ID).session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"))
+                .andExpect(request().sessionAttributeDoesNotExist("gameId"));
+
+        verify(gameManager).deleteByGameId(GAME_ID);
     }
 }

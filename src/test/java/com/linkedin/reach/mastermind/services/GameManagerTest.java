@@ -2,96 +2,92 @@ package com.linkedin.reach.mastermind.services;
 
 import com.linkedin.reach.mastermind.models.Game;
 import com.linkedin.reach.mastermind.models.Guess;
+import com.linkedin.reach.mastermind.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class GameManagerTest {
 
+    private GameRepository gameRepository;
     private GameManager gameManager;
-
-    @Mock
-    private Game mockGame;
-
-    @Mock
-    private Guess mockGuessLow;
-
-    @Mock
-    private Guess mockGuessWin;
 
     @BeforeEach
     void setUp() {
-        gameManager = new GameManager();
+        gameRepository = mock(GameRepository.class);
+        gameManager = new GameManager(gameRepository);
     }
 
     @Test
-    void test_hasGame_falseWhenNoCurrent() {
+    void delegate_find_save_delete() {
+        Game g = mock(Game.class);
+        when(gameRepository.findByGameId("id")).thenReturn(g);
+        assertSame(g, gameManager.findByGameId("id"));
+        gameManager.save(g);
+        verify(gameRepository).save(g);
+        gameManager.deleteByGameId("id");
+        verify(gameRepository).deleteByGameId("id");
+    }
+
+    @Test
+    void current_set_get_clear_hasGame() {
+        Game g = mock(Game.class);
         assertFalse(gameManager.hasGame());
-        assertNull(gameManager.getCurrent());
-    }
-
-    @Test
-    void test_setAndGetCurrent() {
-        gameManager.setCurrent(mockGame);
+        gameManager.setCurrent(g);
         assertTrue(gameManager.hasGame());
-        assertSame(mockGame, gameManager.getCurrent());
-    }
-
-    @Test
-    void test_clear_resetsCurrent() {
-        gameManager.setCurrent(mockGame);
+        assertSame(g, gameManager.getCurrent());
         gameManager.clear();
         assertFalse(gameManager.hasGame());
         assertNull(gameManager.getCurrent());
     }
 
     @Test
-    void test_checkGameOverStatus_winByCorrectLocations() {
-        when(mockGuessWin.getCorrectLocations()).thenReturn(4);
-        when(mockGame.getGuessHistory()).thenReturn(List.of(mockGuessLow, mockGuessWin));
-
-        gameManager.checkGameOverStatus(mockGame);
-
-        verify(mockGame, times(1)).setWon(true);
-        verify(mockGame, times(1)).setFinished(true);
-        verify(mockGame, times(1)).end();
-        verify(mockGame, never()).getAttempts();
-        verify(mockGame, never()).getMaxAttempts();
+    void checkGameOver_won_whenCorrectLocationsAtLeast4() {
+        Game current = mock(Game.class);
+        Guess guess = mock(Guess.class);
+        when(guess.getCorrectLocations()).thenReturn(4);
+        ArrayList<Guess> history = new ArrayList<>();
+        history.add(guess);
+        when(current.getGuessHistory()).thenReturn(history);
+        gameManager.checkGameOverStatus(current);
+        verify(current).setWon(true);
+        verify(current).setFinished(true);
+        verify(current).end();
     }
 
     @Test
-    void test_checkGameOverStatus_lossByAttempts() {
-        when(mockGuessLow.getCorrectLocations()).thenReturn(2);
-        when(mockGame.getGuessHistory()).thenReturn(List.of(mockGuessWin, mockGuessLow));
-        when(mockGame.getAttempts()).thenReturn(10);
-        when(mockGame.getMaxAttempts()).thenReturn(10);
-
-        gameManager.checkGameOverStatus(mockGame);
-
-        verify(mockGame, never()).setWon(true);
-        verify(mockGame, times(1)).setFinished(true);
-        verify(mockGame, times(1)).end();
+    void checkGameOver_finished_whenAttemptsReached() {
+        Game current = mock(Game.class);
+        Guess guess = mock(Guess.class);
+        when(guess.getCorrectLocations()).thenReturn(2);
+        ArrayList<Guess> history = new ArrayList<>();
+        history.add(guess);
+        when(current.getGuessHistory()).thenReturn(history);
+        when(current.getAttempts()).thenReturn(5);
+        when(current.getMaxAttempts()).thenReturn(5);
+        gameManager.checkGameOverStatus(current);
+        verify(current, never()).setWon(true);
+        verify(current).setFinished(true);
+        verify(current).end();
     }
 
     @Test
-    void test_checkGameOverStatus_notOver() {
-        when(mockGuessLow.getCorrectLocations()).thenReturn(1);
-        when(mockGame.getGuessHistory()).thenReturn(List.of(mockGuessWin, mockGuessLow));
-        when(mockGame.getAttempts()).thenReturn(3);
-        when(mockGame.getMaxAttempts()).thenReturn(10);
-
-        gameManager.checkGameOverStatus(mockGame);
-
-        verify(mockGame, never()).setWon(true);
-        verify(mockGame, never()).setFinished(true);
-        verify(mockGame, never()).end();
+    void checkGameOver_continue_whenNotWonAndAttemptsRemaining() {
+        Game current = mock(Game.class);
+        Guess guess = mock(Guess.class);
+        when(guess.getCorrectLocations()).thenReturn(1);
+        ArrayList<Guess> history = new ArrayList<>();
+        history.add(guess);
+        when(current.getGuessHistory()).thenReturn(history);
+        when(current.getAttempts()).thenReturn(1);
+        when(current.getMaxAttempts()).thenReturn(5);
+        gameManager.checkGameOverStatus(current);
+        verify(current, never()).setWon(true);
+        verify(current, never()).setFinished(true);
+        verify(current, never()).end();
     }
 }
